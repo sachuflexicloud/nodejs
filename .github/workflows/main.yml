@@ -20,7 +20,7 @@ jobs:
     - name: Deploy to Server using SSH with password
       run: |
         sshpass -p "${{ secrets.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-          cd ~/my_repo
+          cd /home/nodeapp
           git pull origin main
           pm2 restart app || pm2 start app.js --name app
         EOF
