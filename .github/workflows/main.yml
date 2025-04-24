@@ -21,3 +21,4 @@ jobs:
             cd /home/nodeapp
             git pull origin main
             sudo systemctl restart nginx
+            pm2 restart server.js
