@@ -19,5 +19,25 @@ jobs:
       with:
         node-version: 12.x
 
+    - name: Install Dependencies
+      run: npm install
+
+    - name: Install PM2 Globally
+      run: npm install -g pm2
+
+    - name: Check PM2 Version
+      run: pm2 -v
+
+    - name: List PM2 Processes (Before Restart)
+      run: pm2 ls
+
+    - name: Run Tests (Temporarily Skipped)
+      run: |
+        echo "Skipping tests for now"
+
     - name: Restart App with PM2
-      run: pm2 restart server.js
+      run: |
+        pm2 restart server.js || pm2 start server.js
+
+    - name: List PM2 Processes (After Restart)
+      run: pm2 ls
