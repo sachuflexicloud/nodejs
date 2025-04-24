@@ -22,5 +22,5 @@ jobs:
           sudo chown -R nodeapp:nodeapp /home/nodeapp
           sudo -u nodeapp git fetch origin
           sudo -u nodeapp git reset --hard origin/main
-          pm2 restart app || pm2 start app.js --name app || exit 1
+          pm2 start server.js
         EOF
