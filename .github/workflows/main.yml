@@ -23,4 +23,4 @@ jobs:
           cd /home/nodeapp
           git pull origin main
           pm2 restart app || pm2 start app.js --name app
-        EOF
+       
