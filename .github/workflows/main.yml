@@ -1,43 +1,28 @@
-name: Node.js CI
+name: Deploy via SSH (No Runner Needed)
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
-  build:
-    runs-on: self-hosted
+  deploy:
+    runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Use Node.js 12.x
-      uses: actions/setup-node@v2
-      with:
-        node-version: 12.x
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SERVER_IP }}           # Use secret for server IP
+          username: ${{ secrets.SERVER_USER }}     # Use secret for SSH username
+          key: ${{ secrets.SERVER_SSH_KEY }}       # Use secret for SSH private key
+          port: 22
+          script: |
+            cd /home/nodeapp
+            git pull origin main
+            sudo systemctl restart nginx
+            pm2 start server.js 
 
-    - name: Install Dependencies
-      run: npm install
-
-    - name: Install PM2 Globally
-      run: npm install -g pm2
-
-    - name: Check PM2 Version
-      run: pm2 -v
-
-    - name: List PM2 Processes (Before Restart)
-      run: pm2 ls
-
-    - name: Run Tests (Temporarily Skipped)
-      run: |
-        echo "Skipping tests for now"
-
-    - name: Restart App with PM2
-      run: |
-        pm2 restart server.js || pm2 start server.js
-
-    - name: List PM2 Processes (After Restart)
-      run: pm2 ls
