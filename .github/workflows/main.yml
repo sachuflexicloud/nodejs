@@ -2,28 +2,28 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 jobs:
-  run_pull:
-    name: run pull
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Install SSH keys
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup SSH for GitHub Actions
       run: |
-        install -m 600 -D /dev/null ~/.ssh/id_rsa
+        mkdir -p ~/.ssh
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
 
-    - name: Connect and pull latest code
+    - name: Deploy to server via SSH
       run: |
-        ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-          cd ${{ secrets.WORK_DIR }} || exit 1
-          sudo -u root git fetch origin
-          sudo -u root git reset --hard origin/${{ secrets.MAIN_BRANCH }}
-          pm2 restart server || pm2 start server.js --name server
+        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+          cd /home/nodeapp || exit 1
+          sudo chown -R nodeapp:nodeapp /home/nodeapp
+          sudo -u nodeapp git fetch origin
+          sudo -u nodeapp git reset --hard origin/main
+          pm2 restart server || pm2 start /home/nodeapp/server.js --name server
         EOF
-
-    - name: Cleanup SSH
-      run: rm -rf ~/.ssh
