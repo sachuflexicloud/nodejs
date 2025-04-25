@@ -20,7 +20,7 @@ jobs:
 
     - name: Deploy to server via SSH
       run: |
-        ssh -i ~/.ssh/id_ed25519 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
           cd /home/nodeapp || exit 1
           sudo chown -R nodeapp:nodeapp /home/nodeapp
           sudo -u nodeapp git fetch origin
