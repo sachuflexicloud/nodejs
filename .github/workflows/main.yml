@@ -21,6 +21,8 @@
       run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git checkout ${{ secrets.MAIN_BRANCH }} && git pull && exit"
     - name: cleanup
       run: |
+          #!/bin/bash
+          npm install -g pm2 # Ensure pm2 is installed
           pm2 restart server || pm2 start /home/***/server.js --name server
           rm -rf ~/.ssh 
           EOF 
