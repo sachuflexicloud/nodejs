@@ -3,27 +3,45 @@ on:
     branches:
       - main
   workflow_dispatch:
-  
+
 jobs:
   run_pull:
-    name: run pull
+    name: Run pull and restart server
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: install ssh keys
-      # check this thread to understand why its needed:
-      # https://stackoverflow.com/a/70447517
+    - name: Install SSH keys
       run: |
         install -m 600 -D /dev/null ~/.ssh/id_rsa
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
         ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
-    - name: connect and pull
-      run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git checkout ${{ secrets.MAIN_BRANCH }} && git pull && exit"
-    - name: cleanup
+
+    - name: Connect and pull latest code
       run: |
-          pm2 restart server || pm2 start /home/***/server.js --name server
-          rm -rf ~/.ssh 
-          EOF
+        ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
+        cd ${{ secrets.WORK_DIR }} && 
+        git checkout ${{ secrets.MAIN_BRANCH }} && 
+        git pull
+        exit"
+
+    - name: Install PM2 on the remote server (if not installed)
+      run: |
+        ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
+        if ! command -v pm2 &> /dev/null; then
+          npm install -g pm2
+        fi
+        exit"
+        
+    - name: Restart or start the server using PM2
+      run: |
+        ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
+        cd ${{ secrets.WORK_DIR }} && 
+        pm2 restart server || pm2 start /home/***/server.js --name server
+        exit"
+
+    - name: Cleanup SSH keys
+      run: rm -rf ~/.ssh
+
 
 
           
