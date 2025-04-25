@@ -13,14 +13,14 @@ jobs:
 
     - name: Setup SSH for GitHub Actions
       run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+        mkdir -p /home/nodeapp/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > /home/nodeapp/.ssh/id_rsa
+        chmod 600 /home/nodeapp/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.SERVER_IP }} >> /home/nodeapp/.ssh/known_hosts
 
     - name: Deploy to server via SSH
       run: |
-        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+        ssh -i /nodeapp/home/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
           cd /home/nodeapp || exit 1
           sudo chown -R nodeapp:nodeapp /home/nodeapp
           sudo -u nodeapp git fetch origin
