@@ -21,11 +21,32 @@ jobs:
     - name: Deploy to server via SSH
       run: |
         ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+          # Debugging info
+          echo "Current user: $(whoami)"
+          echo "PM2 version: $(pm2 -v)"
+          echo "PM2 status:"
+          pm2 status
+
+          # Change to the application directory
           cd /home/nodeapp || exit 1
+          
+          # Pull the latest code from the main branch
           git pull origin main
+
+          # Set ownership of the application files to the 'nodeapp' user
           sudo chown -R nodeapp:nodeapp /home/nodeapp
+
+          # Fetch latest changes and reset to 'main' branch
           sudo -u nodeapp git fetch origin
           sudo -u nodeapp git reset --hard origin/main
-          pm2 restart server || pm2 start /home/***/server.js --name server
+
+          # Ensure PM2 is available in the current PATH
+          export PATH=$PATH:/usr/local/bin
+
+          # Restart PM2 process or start it if not already running
+          sudo -u nodeapp pm2 status || pm2 start /home/***/server.js --name server
+          sudo -u nodeapp pm2 restart server || pm2 start /home/***/server.js --name server
         EOF
+
+
 
