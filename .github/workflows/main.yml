@@ -1,5 +1,3 @@
-name: Deploy App Using SSH Key
-
 on:
   push:
     branches:
@@ -10,45 +8,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
+    - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Set up SSH key
+    - name: Setup SSH for GitHub Actions
       run: |
-        # Store the private key from GitHub Secrets into a file
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > gitkey.pem
-        
-        # Set appropriate file permissions for the SSH key
-        chmod 600 gitkey.pem
-        
-        # Create the .ssh directory if it doesn't exist
         mkdir -p ~/.ssh
-        
-        # Add the server's fingerprint to known_hosts to avoid SSH prompts
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
         ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
 
-    - name: Deploy to Server using SSH
+    - name: Deploy to server via SSH
       run: |
-        # SSH into the server and deploy the app
-        ssh -i gitkey.pem -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-          # Navigate to your application directory
+        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
           cd /home/nodeapp || exit 1
-          
-          # Output Git info (for debugging purposes)
-          echo "--- Git Info ---"
-          git config --global --add safe.directory /home/nodeapp
-          git fetch origin
-          git checkout main
-          git reset --hard origin/main
-          
-          # Install Node.js dependencies
-          echo "--- Installing dependencies ---"
-          npm install
-          
-          # Restart or start the app with PM2
-          echo "--- Restarting PM2 ---"
-          pm2 restart server || pm2 start server.js --name server
-          
-          # Output success message
-          echo "✅ Deployment Complete"
+          sudo chown -R nodeapp:nodeapp /home/nodeapp
+          sudo -u nodeapp git fetch origin
+          sudo -u nodeapp git reset --hard origin/main
+          pm2 restart server || pm2 start /home/***/server.js --name server
         EOF
