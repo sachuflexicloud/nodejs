@@ -1,4 +1,5 @@
 
+
 name: Deploy App Using SSH Key
 
 on:
@@ -8,16 +9,22 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # Use an Ubuntu virtual machine for the job
 
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v2
-  
+
     - name: Deploy to Server using SSH
       run: |
-        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+        
+        ssh -o StrictHostKeyChecking=no -i /home/nodeapp/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+          
           cd /home/nodeapp
+
+          
           git pull origin main
-          pm2 restart app || pm2 start app.js --name app
+
+          
+          pm2 restart server || pm2 start server.js --name server
         EOF
