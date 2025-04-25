@@ -8,22 +8,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
+    - name: Checkout Repository
       uses: actions/checkout@v2
 
-    - name: Setup SSH for GitHub Actions
+    - name: Install sshpass
+      run: sudo apt-get update && sudo apt-get install -y sshpass
+      
+     
+    - name: Deploy to Server using SSH with password
       run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa  # Use the private key
-        chmod 600 ~/.ssh/id_rsa  # Ensure proper permissions on the private key
-        ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
-
-    - name: Deploy to server via SSH
-      run: |
-        ssh -v -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+        sshpass -p "${{ secrets.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
           cd /home/nodeapp || exit 1
           sudo chown -R nodeapp:nodeapp /home/nodeapp
           sudo -u nodeapp git fetch origin
           sudo -u nodeapp git reset --hard origin/main
-          pm2 restart server || pm2 start /home/nodeapp/server.js --name server
+          pm2 restart server || pm2 start /home/***/server.js --name server
         EOF
