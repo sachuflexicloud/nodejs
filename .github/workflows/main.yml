@@ -20,10 +20,30 @@ jobs:
 
     - name: Deploy to server via SSH
       run: |
+        # Connect to the remote server and deploy the code
         ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+          # Navigate to the application directory
           cd /home/nodeapp || exit 1
+          
+          # Ensure the ownership is set correctly
           sudo chown -R nodeapp:nodeapp /home/nodeapp
+
+          # Fetch the latest code from the main branch
           sudo -u nodeapp git fetch origin
           sudo -u nodeapp git reset --hard origin/main
-          pm2 restart server || pm2 start /home/***/server.js --name server
+
+          # Ensure pm2 is installed (this might be redundant if already installed)
+          if ! command -v pm2 &> /dev/null
+          then
+            echo "pm2 could not be found, installing it..."
+            sudo npm install -g pm2
+          fi
+
+          # Restart the server with pm2 or start if not running
+          if pm2 status server | grep -q "online"; then
+            pm2 restart server;
+          else
+            pm2 start /home/nodeapp/server.js --name server;
+          fi
         EOF
+
