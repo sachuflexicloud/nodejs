@@ -23,5 +23,4 @@ jobs:
       run: rm -rf ~/.ssh
     - name: restart or start pm2 server
       run: |
-        cd /home/nodeapp
-        pm2 restart server || pm2 start server.js
+        pm2 restart server || pm2 start server.js --name server
