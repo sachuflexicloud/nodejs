@@ -21,11 +21,6 @@ jobs:
       run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git checkout ${{ secrets.MAIN_BRANCH }} && git pull && exit"
     - name: cleanup
       run: rm -rf ~/.ssh
-    - name: install pm2
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y nodejs npm
-        sudo npm install -g pm2
     - name: restart or start pm2 server
       run: |
         pm2 restart server || pm2 start server.js --name server
