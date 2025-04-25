@@ -16,7 +16,6 @@ jobs:
         mkdir -p /home/nodeapp/.ssh
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > /home/nodeapp/.ssh/id_rsa
         chmod 600 /home/nodeapp/.ssh/id_rsa
-        ssh-keyscan -H ${{ secrets.SERVER_IP }} >> /home/nodeapp/.ssh/known_hosts
 
     - name: Deploy to server via SSH
       run: |
