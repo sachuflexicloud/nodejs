@@ -21,7 +21,14 @@ jobs:
       run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git checkout ${{ secrets.MAIN_BRANCH }} && git pull && exit"
     - name: cleanup
       run: rm -rf ~/.ssh
-    - name: restart or start pm2 server
+    - name: install dependencies (npm install)
       run: |
-        npm install
-        pm2 restart server || pm2 start server.js --name server
+        ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /home/nodeapp && npm install"
+
+    - name: install pm2
+      run: |
+        ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /home/nodeapp && sudo npm install -g pm2"
+
+    - name: restart or start pm2 server inside /home/nodeapp
+      run: |
+        ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /home/nodeapp && pm2 restart server || pm2 start server.js --name server"
