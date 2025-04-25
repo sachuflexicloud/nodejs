@@ -1,43 +1,29 @@
-on:
+ on:
   push:
     branches:
       - main
   workflow_dispatch:
-
-jobs:
+  
+ jobs:
   run_pull:
     name: run pull
     runs-on: ubuntu-latest
-
+    
     steps:
     - name: install ssh keys
+      # check this thread to understand why its needed:
+      # https://stackoverflow.com/a/70447517
       run: |
         install -m 600 -D /dev/null ~/.ssh/id_rsa
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-
+        ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
     - name: connect and pull
+      run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git checkout ${{ secrets.MAIN_BRANCH }} && git pull && exit"
+    - name: cleanup
       run: |
-        ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /home/nodeapp && git checkout ${{ secrets.MAIN_BRANCH }} && git pull && exit"
-
-    - name: check if package.json exists
-      run: |
-        ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /home/nodeapp && ls -l package.json"
-
-    - name: cleanup ssh keys
-      run: rm -rf ~/.ssh
-
-    - name: install dependencies (npm install)
-      run: |
-        ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /home/nodeapp && npm install"
-
-    - name: install pm2
-      run: |
-        ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /home/nodeapp && sudo npm install -g pm2"
-
-    - name: restart or start pm2 server inside /home/nodeapp
-      run: |
-        ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /home/nodeapp && pm2 restart server || pm2 start server.js --name server"
+          pm2 restart server || pm2 start /home/***/server.js --name server
+          rm -rf ~/.ssh 
+          EOF 
 
 
 
