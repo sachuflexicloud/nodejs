@@ -18,7 +18,7 @@ jobs:
     - name: Deploy to Server using SSH
       run: |
         
-        ssh -o StrictHostKeyChecking=no -i /home/nodeapp/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+        ssh -o StrictHostKeyChecking=no -i /home/nodeapp/.ssh/authorized_keys/ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
           
           cd /home/nodeapp
 
