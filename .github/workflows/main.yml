@@ -21,10 +21,6 @@ jobs:
       run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git checkout ${{ secrets.MAIN_BRANCH }} && git pull && exit"
     - name: cleanup
       run: |
-          cd /home/nodeapp || exit 1
-          sudo chown -R nodeapp:nodeapp /home/nodeapp
-          sudo -u nodeapp git fetch origin
-          sudo -u nodeapp git reset --hard origin/main
           pm2 restart server || pm2 start /home/***/server.js --name server
           rm -rf ~/.ssh 
           EOF
