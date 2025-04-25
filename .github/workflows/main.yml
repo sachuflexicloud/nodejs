@@ -18,7 +18,7 @@ jobs:
     - name: Deploy to Server using SSH with password
       run: |
         sshpass -p "${{ secrets.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-          cd ~/nodeapp || exit 1
+          cd /home/nodeapp || exit 1
           sudo chown -R nodeapp:nodeapp /home/nodeapp
           sudo -u nodeapp git fetch origin
           sudo -u nodeapp git reset --hard origin/main
