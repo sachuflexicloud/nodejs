@@ -1,3 +1,5 @@
+name: Deploy App Using SSH Key
+
 on:
   push:
     branches:
@@ -8,41 +10,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
+    - name: Checkout Repository
       uses: actions/checkout@v2
 
-    - name: Setup SSH for GitHub Actions
+    - name: Set up SSH key
       run: |
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > gitkey.pem
+        chmod 600 gitkey.pem
         mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-       
-    - name: Deploy to server via SSH
+        ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+    - name: Deploy to Server using SSH
       run: |
-        # Connect to the remote server and deploy the code
-        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-          # Navigate to the application directory
+        ssh -i gitkey.pem -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
           cd /home/nodeapp || exit 1
-          
-          # Ensure the ownership is set correctly
-          sudo chown -R nodeapp:nodeapp /home/nodeapp
-
-          # Fetch the latest code from the main branch
-          sudo -u nodeapp git fetch origin
-          sudo -u nodeapp git reset --hard origin/main
-
-          # Ensure pm2 is installed (this might be redundant if already installed)
-          if ! command -v pm2 &> /dev/null
-          then
-            echo "pm2 could not be found, installing it..."
-            sudo npm install -g pm2
-          fi
-
-          # Restart the server with pm2 or start if not running
-          if pm2 status server | grep -q "online"; then
-            pm2 restart server;
-          else
-            pm2 start /home/nodeapp/server.js --name server;
-          fi
-        EOF
+          echo "--- Git Info ---"
+          git config --global --add safe.directory /home/nodeapp
+          git fetch origin
+          git checkout main
+          git reset --hard origin/main
+          echo "--- Installing dependencies ---"
+          npm install
+          echo "--- Restarting PM2 ---"
+          pm2 restart server || pm2 start /home/***/server.js --name server
+          echo "✅ Deployment Complete"
+        EOF
 
