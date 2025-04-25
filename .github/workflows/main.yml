@@ -32,7 +32,7 @@ jobs:
         # SSH into the server and deploy the app
         ssh -i gitkey.pem -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
           # Navigate to your application directory
-          cd /home/jobin/test || exit 1
+          cd /home/nodeapp || exit 1
           
           # Output Git info (for debugging purposes)
           echo "--- Git Info ---"
