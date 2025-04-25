@@ -24,13 +24,16 @@ jobs:
         chmod 600 ~/.ssh/id_rsa
         eval "$(ssh-agent -s)"
         ssh-add ~/.ssh/id_rsa
-
+        
     - name: Deploy to Server using SSH with SSH key
       run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-          cd /home/nodeapp || exit 1
-          sudo chown -R nodeapp:nodeapp /home/nodeapp
-          sudo -u nodeapp git fetch origin
-          sudo -u nodeapp git reset --hard origin/main
-          pm2 restart server || pm2 start /home/***/server.js --name server
-        EOF
+       ssh -t -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+       cd /home/nodeapp || exit 1
+       sudo chown -R nodeapp:nodeapp /home/nodeapp
+       sudo -u nodeapp git fetch origin
+       sudo -u nodeapp git reset --hard origin/main
+       pm2 restart server || pm2 start /home/***/server.js --name server
+       EOF
+
+
+    
