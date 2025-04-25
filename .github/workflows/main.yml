@@ -22,13 +22,13 @@ jobs:
     - name: cleanup
       run: rm -rf ~/.ssh
     - name: install dependencies (npm install)
-      run: |
+      run: 
         ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /home/nodeapp && npm install"
 
     - name: install pm2
-      run: |
+      run: 
         ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /home/nodeapp && sudo npm install -g pm2"
 
     - name: restart or start pm2 server inside /home/nodeapp
-      run: |
+      run: 
         ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /home/nodeapp && pm2 restart server || pm2 start server.js --name server"
