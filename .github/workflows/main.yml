@@ -26,6 +26,7 @@
           sudo -u nodeapp git fetch origin
           sudo -u nodeapp git reset --hard origin/main
           pm2 restart server || pm2 start /home/***/server.js --name server
+          
         EOF  
      
 
