@@ -1,5 +1,4 @@
 name: Deploy App Using SSH Key
-
 on:
   push:
     branches:
@@ -33,5 +32,5 @@ jobs:
           echo "--- Restarting PM2 ---"
           pm2 restart server || pm2 start /home/***/server.js --name server
           echo "✅ Deployment Complete"
-        EOF
-
+    
+         
