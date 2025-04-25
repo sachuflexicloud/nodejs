@@ -13,10 +13,9 @@ jobs:
 
     - name: Setup SSH for GitHub Actions
       run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > /nodeapp/.ssh/id_rsa
+        chmod 600 /nodeapp/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.SERVER_IP }} >> /nodeapp/.ssh/known_hosts
 
     - name: Deploy to server via SSH
       run: |
