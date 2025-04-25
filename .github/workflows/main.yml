@@ -23,4 +23,5 @@ jobs:
       run: rm -rf ~/.ssh
     - name: restart or start pm2 server
       run: |
-        pm2 restart server || pm2 start server.js --name server
+        #pm2 restart server || pm2 start server.js --name server
+         pm2 restart server
