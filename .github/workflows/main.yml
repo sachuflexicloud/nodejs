@@ -15,22 +15,40 @@ jobs:
 
     - name: Set up SSH key
       run: |
+        # Store the private key from GitHub Secrets into a file
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > gitkey.pem
+        
+        # Set appropriate file permissions for the SSH key
         chmod 600 gitkey.pem
+        
+        # Create the .ssh directory if it doesn't exist
         mkdir -p ~/.ssh
+        
+        # Add the server's fingerprint to known_hosts to avoid SSH prompts
         ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+
     - name: Deploy to Server using SSH
       run: |
+        # SSH into the server and deploy the app
         ssh -i gitkey.pem -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+          # Navigate to your application directory
           cd /home/jobin/test || exit 1
+          
+          # Output Git info (for debugging purposes)
           echo "--- Git Info ---"
           git config --global --add safe.directory /home/jobin/test
           git fetch origin
           git checkout main
           git reset --hard origin/main
+          
+          # Install Node.js dependencies
           echo "--- Installing dependencies ---"
           npm install
+          
+          # Restart or start the app with PM2
           echo "--- Restarting PM2 ---"
           pm2 restart app || pm2 start app.js --name app
+          
+          # Output success message
           echo "✅ Deployment Complete"
-          EOF
+        EOF
