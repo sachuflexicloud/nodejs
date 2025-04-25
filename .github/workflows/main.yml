@@ -1,53 +1,23 @@
-name: Deploy App Using SSH Key
-
 on:
   push:
     branches:
       - main
-
+  workflow_dispatch:
+  
 jobs:
-  deploy:
+  run_pull:
+    name: run pull
     runs-on: ubuntu-latest
-
+    
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v2
-
-    - name: Set up SSH key
+    - name: install ssh keys
+      # check this thread to understand why its needed:
+      # https://stackoverflow.com/a/70447517
       run: |
-        # Save the SSH private key to a file
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/gitkey.pem
-        chmod 600 ~/.ssh/gitkey.pem
-
-        # Create ~/.ssh directory if not already present
-        mkdir -p ~/.ssh
-
-        # Add the server's SSH key to known_hosts to avoid prompts on first connection
-        ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
-
-    - name: Deploy to Server using SSH
-      run: |
-        # Use the private key and SSH into the server
-        ssh -i ~/.ssh/gitkey.pem -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-          # Navigate to the project directory
-          cd /home/nodeapp || exit 1
-
-          # Git operations
-          echo "--- Git Info ---"
-          git config --global --add safe.directory /home/nodeapp
-          git fetch origin
-          git checkout main
-          git reset --hard origin/main
-
-          # Install dependencies
-          echo "--- Installing dependencies ---"
-          npm install
-
-          # Restart PM2 or start the server if not running
-          echo "--- Restarting PM2 ---"
-          pm2 restart server || pm2 start /home/nodeapp/server.js --name server
-
-          echo "✅ Deployment Complete"
-        EOF
-
-         
+        install -m 600 -D /dev/null ~/.ssh/id_rsa
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
+    - name: connect and pull
+      run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git checkout ${{ secrets.MAIN_BRANCH }} && git pull && exit"
+    - name: cleanup
+      run: rm -rf ~/.ssh
